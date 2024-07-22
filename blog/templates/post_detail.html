@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="container mt-4">
+                <h2 class="mb-4">{{ post.title }}</h2>
+                <p class="card-text">{{ post.content }}</p>
+                <br>
+            </div>
+            
+            <!-- Display edit and delete options if user can_edit -->
+            {% if can_edit %}
+            <p><a href="{% url 'post-edit' post.pk %}" class="btn btn-primary">Edit Post</a></p>
+            <!-- Add delete option if needed -->
+            {% endif %}
+            
+            <!-- Comments section -->
+            <h4>Comments</h4>
+            <ul class="list-unstyled">
+                {% for comment in comments %}
+                <li>{{ comment.author.username }} - {{ comment.text }}</li>
+                {% endfor %}
+            </ul>
+            
+            <!-- Form to add comment -->
+            {% if request.user.is_authenticated %}
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="id_text" class="form-label">Comment</label>
+                    <textarea id="id_text" name="text" class="form-control form-control-sm" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Submit Comment</button>
+            </form>
+            {% else %}
+            <p>Please <a href="{% url 'login' %}" class="btn btn-primary">log in</a> to add a comment.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

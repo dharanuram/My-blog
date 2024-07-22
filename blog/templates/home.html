@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Blog</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://bootswatch.com/5/quartz/bootstrap.min.css">
+    
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-4">My Blog</h1>
+        <p class="lead">Welcome to My Blog!</p>
+    
+        {% block content %}
+        <h2 class="mt-4">Blog Posts</h2><br>
+        {% for post in posts %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title"><a href="{% url 'post-detail' post.pk %}">{{ post.title }}</a></h2>
+                <p class="card-text"><small class="text-muted">{{ post.created_at }}</small></p>
+            </div>
+        </div>
+        {% empty %}
+        <p>No posts yet.</p>
+        {% endfor %}
+        {% endblock %}
+        
+    </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
