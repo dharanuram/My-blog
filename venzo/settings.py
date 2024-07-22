@@ -85,10 +85,10 @@ WSGI_APPLICATION = 'venzo.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'data',
-        'USER': 'postgres',
-        'PASSWORD': '1234',
-        'HOST': 'localhost',
+        'NAME': 'data_jtz2',
+        'USER': 'data_jtz2_user',
+        'PASSWORD': 'DRhZ2eWIpGSdMwmrA2YBfPbkJvEJip3g',
+        'HOST': 'dpg-cqf03s08fa8c73eg4lag-a.oregon-postgres.render.com',
         'PORT': '5432',
     }
 }
