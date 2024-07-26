@@ -141,3 +141,6 @@ STATIC_URL = 'static/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+IMAGE_CACHE_ROOT = os.path.join(MEDIA_ROOT, 'image_cache')
+AWS_S3_IMAGE_CACHE_ROOT = 'image-cache'
