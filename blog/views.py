@@ -1,10 +1,13 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
+from django.urls import reverse_lazy
 from .models import Like, Post, Comment
-from .forms import CommentForm, PostForm, RegisterForm
+from .forms import CommentForm, CustomLoginForm, PostForm, RegisterForm
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import logout
+from django.shortcuts import render, redirect
+
 
 # Custom decorator to check if user is admin
 def is_admin(user):
@@ -26,7 +29,7 @@ def create_post(request):
         form = PostForm()
     return render(request, 'create_post.html', {'form': form})
 
-
+@login_required
 def home(request):
     posts = Post.objects.all().order_by('-created_at')
     return render(request, 'home.html', {'posts': posts})
@@ -34,17 +37,39 @@ def home(request):
 @login_required
 def post_detail(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    comments = post.comments.all()
+    comments = post.comments.filter(reply_to=None)  # Fetch only top-level comments
     is_liked = post.likes.filter(user=request.user).exists()
 
     if request.method == 'POST' and request.user.is_authenticated:
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.post = post
-            comment.author = request.user
-            comment.save()
+        # Handle like/unlike logic
+        if 'like' in request.POST:
+            if is_liked:
+                post.likes.filter(user=request.user).delete()
+            else:
+                Like.objects.create(user=request.user, post=post)
             return redirect('post-detail', pk=post.pk)
+        
+        total_likes = post.likes.count()
+        
+        if 'text' in request.POST:  # Handle new comment
+            form = CommentForm(request.POST)
+            if form.is_valid():
+                comment = form.save(commit=False)
+                comment.post = post
+                comment.author = request.user
+                comment.save()
+                return redirect('post-detail', pk=post.pk)
+        elif 'reply_to_id' in request.POST:  # Handle reply to comment
+            reply_to_id = request.POST.get('reply_to_id')
+            parent_comment = get_object_or_404(Comment, pk=reply_to_id)
+            form = CommentForm(request.POST)
+            if form.is_valid():
+                reply_comment = form.save(commit=False)
+                reply_comment.post = post
+                reply_comment.author = request.user
+                reply_comment.reply_to = parent_comment  # Assign parent comment
+                reply_comment.save()
+                return redirect('post-detail', pk=post.pk)
     else:
         form = CommentForm()
     
@@ -55,7 +80,7 @@ def post_detail(request, pk):
         'comments': comments,
         'form': form,
         'is_liked': is_liked,
-        'total_likes': post.likes.count(),
+        'total_likes': post.likes.count(),  # Use the variable instead of post.likes.count() again
         'can_edit': can_edit,
     })
 
@@ -86,11 +111,11 @@ def post_edit(request, pk):
     return render(request, 'post_edit.html', {'form': form, 'post': post})
 
 class CustomLoginView(LoginView):
-    template_name = 'login.html'  # Specify your custom template
+    template_name = 'registration/login.html'  # Specify your custom template if needed
+    form_class = CustomLoginForm
 
-    def form_valid(self, form):
-        next_url = self.request.GET.get('next')
-        return redirect(next_url or 'blog-home')  
+    def get_success_url(self):
+        return reverse_lazy('blog-home')  
 
 def register(request):
     if request.method == 'POST':
@@ -98,11 +123,11 @@ def register(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.save()
-            return redirect('login1')
+            return redirect('login')
     else:
         form = RegisterForm()
     return render(request, 'register.html', {'form': form})
 
 def user_logout(request):
     logout(request)
-    return redirect('blog-home')
+    return redirect('login')

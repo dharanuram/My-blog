@@ -20,3 +20,18 @@
   {% endif %}
   
 {% endblock %}
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Create Post</button>
+</form>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Create Blog Post</button>
+</form>
+
+<h1>{{ post.title }}</h1>
+<p>{{ post.content }}</p>
+<img src="{{ post.image.url }}" alt="Blog Post Image">

@@ -8,7 +8,10 @@
         <div class="col-md-8">
             <div class="container mt-4">
                 <h2 class="mb-4">{{ post.title }}</h2>
-                <p class="card-text">{{ post.content }}</p>
+                {% if post.image %}
+        <img src="{{ post.image.url }}" alt="{{ post.title }}" class="img-fluid mb-4">
+        {% endif %}
+                <p class="card-text">{{ post.content|linebreaksbr }}</p>
                 <br>
             </div>
             
@@ -18,11 +21,57 @@
             <!-- Add delete option if needed -->
             {% endif %}
             
+            <!-- Like button and total likes -->
+            <form method="post" action="{% url 'post-detail' post.pk %}">
+                {% csrf_token %}
+                <button type="submit" name="like" class="btn btn-outline-primary">
+                    {% if is_liked %}
+                    Unlike
+                    {% else %}
+                    Like
+                    {% endif %}
+                </button>
+                <span class="ml-2">{{ total_likes }} {% if total_likes == 1 %}like{% else %}likes{% endif %}</span>
+            </form>
+            <br>
+            
             <!-- Comments section -->
             <h4>Comments</h4>
             <ul class="list-unstyled">
                 {% for comment in comments %}
-                <li>{{ comment.author.username }} - {{ comment.text }}</li>
+                <li>
+                    <div class="comment-content">
+                        <strong>{{ comment.author.username }}</strong> - {{ comment.text }}
+                        <a href="#" class="btn btn-link btn-sm reply-toggle" data-comment-id="{{ comment.id }}">Reply</a>
+                    </div>
+                    
+                    <!-- Reply form -->
+                    <div class="reply-form mt-2" style="display: none;" data-comment-id="{{ comment.id }}">
+                        <form method="post" action="{% url 'post-detail' post.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="reply_to_id" value="{{ comment.id }}">
+                            <div class="mb-3">
+                                <label for="id_reply_text" class="form-label">Reply</label>
+                                <textarea id="id_reply_text" name="text" class="form-control form-control-sm" rows="2"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-sm">Submit Reply</button>
+                        </form>
+                    </div>
+                    <!-- End reply form -->
+
+                    <!-- Nested replies (hidden by default) -->
+                    <ul class="list-unstyled ml-4 replies-list" style="display: none;" data-comment-id="{{ comment.id }}">
+                        {% for reply in comment.replies.all %}
+                        <li>
+                            <div class="comment-content">
+                                <strong>{{ reply.author.username }}</strong> - {{ reply.text }}
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <!-- End nested replies -->
+                    
+                </li>
                 {% endfor %}
             </ul>
             
@@ -42,4 +91,37 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show replies on click
+        document.querySelectorAll('.show-replies').forEach(function(link) {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                var commentId = this.getAttribute('data-comment-id');
+                var repliesList = document.querySelector('.replies-list[data-comment-id="' + commentId + '"]');
+                if (repliesList.style.display === 'none' || repliesList.style.display === '') {
+                    repliesList.style.display = 'block';
+                } else {
+                    repliesList.style.display = 'none';
+                }
+            });
+        });
+    
+        // Toggle reply form visibility
+        document.querySelectorAll('.reply-toggle').forEach(function(link) {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                var commentId = this.getAttribute('data-comment-id');
+                var replyForm = document.querySelector('.reply-form[data-comment-id="' + commentId + '"]');
+                if (replyForm.style.display === 'none' || replyForm.style.display === '') {
+                    replyForm.style.display = 'block';
+                } else {
+                    replyForm.style.display = 'none';
+                }
+            });
+        });
+    });
+    </script>
+    
 {% endblock %}
