@@ -5,27 +5,14 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 class CommentForm(forms.ModelForm):
-    reply_to_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
-
     class Meta:
         model = Comment
         fields = ['text']
     
     def _init_(self, *args, **kwargs):
         super()._init_(*args, **kwargs)
-
-    def save(self, commit=True):
-        comment = super().save(commit=False)
-        if self.post:
-            comment.post = self.post
-    
-        reply_to_id = self.cleaned_data.get('reply_to_id')
-        if reply_to_id:
-            comment.parent = Comment.objects.get(id=reply_to_id)
-    
-        if commit:
-            comment.save()
-        return comment
+        self.fields['text'].widget.attrs.update({'class': 'form-control', 'rows': 3})
+        self.fields['reply_to_id'] = forms.IntegerField(widget=forms.HiddenInput, required=False)
 
 class PostForm(forms.ModelForm):
     class Meta:

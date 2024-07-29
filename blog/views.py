@@ -57,21 +57,22 @@ def post_detail(request, pk):
                 return redirect('post-detail', pk=post.pk)
             
             # Handle comment or reply
-            form = CommentForm(request.POST)
-            if form.is_valid():
-                comment = form.save(commit=False)
-                comment.post = post
-                comment.author = request.user
+            if 'text' in request.POST:
+                form = CommentForm(request.POST)
+                if form.is_valid():
+                    comment = form.save(commit=False)
+                    comment.post = post
+                    comment.author = request.user
                 
                 # Handle reply or new comment
-                reply_to_id = request.POST.get('reply_to_id')
-                if reply_to_id:
+                    reply_to_id = request.POST.get('reply_to_id')
+                    if reply_to_id:
                     # If replying to an existing comment
-                    parent_comment = get_object_or_404(Comment, pk=reply_to_id)
-                    comment.parent = parent_comment
-                else:
+                        parent_comment = get_object_or_404(Comment, pk=reply_to_id)
+                        comment.parent = parent_comment
+                    else:
                     # If it's a new comment (not a reply)
-                    comment.parent = None
+                        comment.parent = None
                 
                 comment.save()
                 return redirect('post-detail', pk=post.pk)
