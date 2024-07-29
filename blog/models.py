@@ -17,11 +17,17 @@ class Post(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
     created_at = models.DateTimeField(default=timezone.now)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=DRAFT)
     image = models.ImageField(upload_to='blog_images', blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=DRAFT)
 
     def _str_(self):
         return self.title
+    
+    def get_likes_count(self):
+        return self.likes.count()
+
+    def get_comments_count(self):
+        return self.comments.count()
 
     class Meta:
         permissions = [
@@ -31,12 +37,12 @@ class Post(models.Model):
         ]
 
 class Comment(models.Model):
-    post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField()
-    created_at = models.DateTimeField(default=timezone.now)
-    reply_to = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True, related_name='replies')
-
+    parent = models.ForeignKey('self', null=True, blank=True, related_name='replies', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
     def _str_(self):
         return f'Comment by {self.author} on {self.post}'
     

@@ -6,16 +6,56 @@
     <title>My Blog</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://bootswatch.com/5/pulse/bootstrap.min.css">
+    <style>
+        .sub-menu {
+            display: none; /* Hide sub-menu initially */
+        }
+        .dropdown-menu.show .sub-menu {
+            display: block; /* Show sub-menu when parent is active */
+        }
+        .card {
+            position: relative; /* Establish a positioning context for absolute positioning */
+        }
+
+        .post-metrics {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.7); /* Semi-transparent background */
+            padding: 10px;
+            border-top-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .card-img-top {
+            width: 100%;
+            height: auto;
+            object-fit: cover; /* Ensure the image covers the area */
+        }
+    </style>
 </head>
 <body>
     <header class="bg-light py-3">
         <div class="container d-flex justify-content-between align-items-center">
             <h1 class="h3 mb-0"><a href="/" class="text-dark text-decoration-none">My Blog</a></h1>
-            <div>
+            <div class="dropdown">
                 {% if user.is_authenticated %}
-                <a href="{% url 'logout' %}">Logout</a>
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton">
+                    {{ user.username }}
+                </button>
+                <ul class="dropdown-menu" id="dropdownMenu">
+                
+                    <li><a class="dropdown-item" href="#" id="editProfileButton">Edit Profile</a>
+                        <ul class="sub-menu dropdown-menu ms-3 mt-1" id="editProfileMenu">
+                            <li><a class="dropdown-item" href="{% url 'edit-email' %}">Edit Email</a></li>
+                            <li><a class="dropdown-item" href="{% url 'change-password' %}">Change Password</a></li>
+                        </ul>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                </ul>
                 {% else %}
-                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
                 {% endif %}
             </div>
         </div>
@@ -27,11 +67,15 @@
         {% block content %}
         <h2 class="mt-4">Blog Posts</h2><br>
         {% for post in posts %}
-        <div class="card mb-4">
+        <div class="card mb-4 position-relative">
             <div class="card-body">
                 <h2 class="card-title"><a href="{% url 'post-detail' post.pk %}">{{ post.title }}</a></h2>
                 <p><strong>Status:</strong> {{ post.get_status_display }}</p>
                 <p class="card-text"><small class="text-muted">{{ post.created_at }}</small></p>
+            </div>
+            <div class="post-metrics">
+                <p><strong>Likes:</strong> {{ post.get_likes_count }}</p>
+                <p><strong>Comments:</strong> {{ post.get_comments_count }}</p>
             </div>
         </div>
         
@@ -41,6 +85,43 @@
         {% endblock %}
     </div>
     
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap and Popper.js JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var dropdownButton = document.getElementById('dropdownMenuButton');
+            var dropdownMenu = document.getElementById('dropdownMenu');
+            
+            dropdownButton.addEventListener('click', function() {
+                var isVisible = dropdownMenu.style.display === 'block';
+                
+                // Toggle the dropdown menu visibility
+                dropdownMenu.style.display = isVisible ? 'none' : 'block';
+            });
+
+            // Close dropdown menu if clicked outside
+            document.addEventListener('click', function(event) {
+                if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                    dropdownMenu.style.display = 'none';
+                }
+            });
+
+            var editProfileButton = document.getElementById('editProfileButton');
+            var editProfileMenu = document.getElementById('editProfileMenu');
+            
+            editProfileButton.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent default link behavior
+                var isVisible = editProfileMenu.style.display === 'block';
+                
+                // Toggle the visibility of the sub-menu
+                editProfileMenu.style.display = isVisible ? 'none' : 'block';
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!editProfileButton.contains(event.target) && !editProfileMenu.contains(event.target)) {
+                    editProfileMenu.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
