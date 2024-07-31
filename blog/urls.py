@@ -15,5 +15,8 @@ urlpatterns = [
     path('edit-profile/', views.edit_profile, name='edit-profile'),
     path('edit-email/', views.edit_email, name='edit-email'),
     path('change-password/', views.change_password, name='change-password'),
-    
+    path('comments/<pk>/delete/', views.delete_comment, name='delete_comment'),
+    path('hashtag/', views.hashtag_search, name='hashtag_search'),
+    path('comment/<int:comment_id>/delete/', views.delete_comment, name='delete_comment'),
+    path('comment/<int:comment_id>/delreply/', views.delete_reply, name='delete_reply'),
 ]

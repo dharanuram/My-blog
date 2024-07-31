@@ -32,19 +32,36 @@
             height: auto;
             object-fit: cover; /* Ensure the image covers the area */
         }
+
+        .tags {
+            margin-top: 10px;
+        }
+
+        .tags a {
+            text-decoration: none;
+            color: #007bff;
+            margin-right: 5px;
+        }
+
+        .tags a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <header class="bg-light py-3">
         <div class="container d-flex justify-content-between align-items-center">
             <h1 class="h3 mb-0"><a href="/" class="text-dark text-decoration-none">My Blog</a></h1>
+            <form class="d-flex" action="{% url 'hashtag_search' %}" method="get">
+                <input class="form-control me-2" type="search" name="q" placeholder="Search posts" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
             <div class="dropdown">
                 {% if user.is_authenticated %}
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton">
                     {{ user.username }}
                 </button>
                 <ul class="dropdown-menu" id="dropdownMenu">
-                
                     <li><a class="dropdown-item" href="#" id="editProfileButton">Edit Profile</a>
                         <ul class="sub-menu dropdown-menu ms-3 mt-1" id="editProfileMenu">
                             <li><a class="dropdown-item" href="{% url 'edit-email' %}">Edit Email</a></li>
@@ -72,6 +89,15 @@
                 <h2 class="card-title"><a href="{% url 'post-detail' post.pk %}">{{ post.title }}</a></h2>
                 <p><strong>Status:</strong> {{ post.get_status_display }}</p>
                 <p class="card-text"><small class="text-muted">{{ post.created_at }}</small></p>
+                
+                <!-- Display hashtags -->
+                <div class="tags">
+                    {% if post.hashtags %}
+                        <p>{{ post.hashtags }}</p>
+                    {% else %}
+                        <strong>No tags</strong>
+                    {% endif %}
+                </div>
             </div>
             <div class="post-metrics">
                 <p><strong>Likes:</strong> {{ post.get_likes_count }}</p>

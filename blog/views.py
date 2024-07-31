@@ -2,7 +2,7 @@ from django.forms import ValidationError
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from .models import Like, Post, Comment
 from .forms import CommentForm, CustomLoginForm, PostForm, RegisterForm
 from django.contrib.auth.views import LoginView
@@ -11,6 +11,16 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, UserChangeForm
 from django.contrib import messages
 from django import forms
+from .models import Comment
+
+@login_required
+def delete_comment(request, pk):
+    comment = get_object_or_404(Comment, pk=pk)
+    if comment.user == request.user:
+        comment.delete()
+        return redirect('comment_list')
+    else:
+        return redirect('comment_list')
 
 # Custom decorator to check if user is admin
 def is_admin(user):
@@ -36,6 +46,20 @@ def create_post(request):
 def home(request):
     posts = Post.objects.all().order_by('-created_at')
     return render(request, 'home.html', {'posts': posts})
+
+@login_required
+def comment_list(request):
+    comments = Comment.objects.filter(user=request.user)
+    return render(request, 'comment_list.html', {'comments': comments})
+
+@login_required
+def delete_comment(request, pk):
+    comment = get_object_or_404(Comment, pk=pk)
+    if comment.user == request.user:
+        comment.delete()
+        return redirect('comment_list')
+    else:
+        return redirect('comment_list')
 
 @login_required
 def post_detail(request, pk):
@@ -202,3 +226,30 @@ def change_password(request):
 def view_profile(request, username):
     user = get_object_or_404(User, username=username)
     return render(request, 'profile.html', {'user': user})
+def hashtag_search(request):
+    tag = request.GET.get('q', '')  
+    posts = Post.objects.filter(hashtags__icontains=tag)
+    return render(request, 'hashtag_search.html', {'posts': posts, 'tag': tag})
+
+@login_required
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    
+    # Ensure the user is the author of the comment or an admin
+    if request.user == comment.author or request.user.is_staff:
+        post = comment.post
+        comment.delete()
+    
+    # Redirect back to the referring page
+    return redirect(reverse('post-detail', kwargs={'pk': post.pk}))
+
+@login_required
+def delete_reply(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    
+    # Ensure comment is the correct comment to delete
+    if request.user == comment.author or request.user.is_superuser:
+        if comment.parent == True:
+            comment.delete()
+    
+    return redirect(reverse('post-detail', kwargs={'pk': comment.post.pk}))

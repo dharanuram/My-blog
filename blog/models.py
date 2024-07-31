@@ -19,6 +19,10 @@ class Post(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     image = models.ImageField(upload_to='blog_images', blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=DRAFT)
+    hashtags = models.TextField(blank=True, help_text="Space-separated list of hashtags")
+
+    def get_hashtags(self):
+        return [tag.strip() for tag in self.hashtags.split() if tag.strip()]
 
     def _str_(self):
         return self.title
@@ -43,6 +47,7 @@ class Comment(models.Model):
     parent = models.ForeignKey('self', null=True, blank=True, related_name='replies', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     
+
     def _str_(self):
         return f'Comment by {self.author} on {self.post}'
     
