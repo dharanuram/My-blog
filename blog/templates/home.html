@@ -52,7 +52,7 @@
 <body>
     <header class="bg-light py-3">
         <div class="container d-flex justify-content-between align-items-center">
-            <h1 class="h3 mb-0"><a href="/" class="text-dark text-decoration-none">My Blog</a></h1>
+            <h1 class="h3 mb-0"><a href="/" class="text-dark text-decoration-none">Programming Languages</a></h1>
             <form class="d-flex" action="{% url 'hashtag_search' %}" method="get">
                 <input class="form-control me-2" type="search" name="q" placeholder="Search posts" aria-label="Search">
                 <button class="btn btn-outline-success" type="submit">Search</button>
@@ -81,6 +81,7 @@
 
     <div class="container mt-4">
         <p class="lead">Welcome to My Blog!</p>
+        <p class="lead">Are you curious about the world of programming languages? Do you want to learn more about the different languages that are used to build websites, apps, and software? Look no further! In this blog, we'll introduce you to the basics of programming and explore the various languages that are used in the industry.</p>
     
         {% block content %}
         <h2 class="mt-4">Blog Posts</h2><br>
