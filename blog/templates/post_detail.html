@@ -42,13 +42,11 @@
     <li>
         <div class="comment-content">
             <strong>{{ comment.author.username }}</strong> - {{ comment.text }}
-
-            {% if comment.user == request.user or request.user.is_staff %}
+            
         <form action="{% url 'delete_comment' comment.id %}" method="post" style="display:inline;">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
         </form>
-        {% endif %}
         
             <a href="#" class="btn btn-link btn-sm reply-toggle" data-comment-id="{{ comment.id }}">Reply</a>
             <!-- Display replies -->
